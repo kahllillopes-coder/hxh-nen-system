@@ -1,10 +1,161 @@
-
 <!DOCTYPE html>
-<html>
-<head><meta charset="UTF-8"><title>HxH Jogador</title></head>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>HxH Nen System – Jogador</title>
+
+<style>
+body{
+  margin:0;
+  background:#020617;
+  color:#e5e7eb;
+  font-family:Arial, sans-serif;
+}
+header{
+  background:#020617;
+  border-bottom:2px solid #22c55e;
+  padding:10px;
+  text-align:center;
+  font-size:18px;
+}
+main{
+  padding:14px;
+  max-width:900px;
+  margin:auto;
+}
+.secao{
+  border-top:1px solid #22c55e;
+  margin-top:14px;
+  padding-top:14px;
+}
+button,input{
+  width:100%;
+  margin-top:6px;
+  padding:6px;
+  background:#020617;
+  color:#e5e7eb;
+  border:1px solid #22c55e;
+}
+button{
+  background:#22c55e;
+  color:#020617;
+  font-weight:bold;
+  cursor:pointer;
+}
+button:hover{background:#4ade80}
+.badge{
+  display:inline-block;
+  border:1px solid #22c55e;
+  padding:2px 6px;
+  margin:2px;
+  font-size:12px;
+}
+</style>
+</head>
+
 <body>
-<h1>HxH Nen System - Jogador</h1>
-<p>const socket = io("https://hxh-nen-system.onrender.com");
-</p>
+
+<header>🎮 Hunter × Hunter RPG — Jogador</header>
+
+<main>
+
+<div class="secao">
+  <h3>🧑 Personagem</h3>
+  <p id="nome">Conectando...</p>
+  <p id="exaustao"></p>
+  <div id="juramentos"></div>
+</div>
+
+<div class="secao">
+  <h3>⚔️ Usar Habilidade Nen</h3>
+  <input id="baseNen" type="number" placeholder="Base de Nen">
+  <input id="dificuldade" type="number" placeholder="Dificuldade">
+  <button onclick="usarNen()">Usar Nen</button>
+</div>
+
+<div class="secao">
+  <h3>🗺️ Local Atual</h3>
+  <p id="localAtual">Desconhecido</p>
+</div>
+
+<div class="secao">
+  <h3>📜 Logs da Campanha</h3>
+  <div id="logs"></div>
+</div>
+
+</main>
+
+<!-- 1️⃣ Biblioteca Socket.IO -->
+<script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+
+<!-- 2️⃣ Código do Jogador -->
+<script>
+const socket = io("https://hxh-nen-system.onrender.com");
+
+let campanha = null;
+let personagem = null;
+
+const nomePersonagem = prompt("Digite o nome do seu personagem:");
+
+socket.on("connect", () => {
+  console.log("Conectado ao servidor");
+});
+
+socket.on("sync", data => {
+  campanha = data;
+  personagem = campanha.fichas.find(f => f.nome === nomePersonagem);
+  render();
+});
+
+function render(){
+  if(!personagem){
+    document.getElementById("nome").innerText = "Personagem não encontrado.";
+    return;
+  }
+
+  nome.innerText = `Nome: ${personagem.nome}`;
+  exaustao.innerText = `Exaustão: ${personagem.exaustao || 0}`;
+
+  juramentos.innerHTML = "";
+  if(personagem.juramentos){
+    personagem.juramentos.forEach(j=>{
+      juramentos.innerHTML += `<span class="badge">⛓️ ${j.nome} (+${j.bonus})</span>`;
+    });
+  }
+
+  logs.innerHTML = "";
+  campanha.logs.slice(-10).forEach(l=>{
+    logs.innerHTML += `<p>${l}</p>`;
+  });
+}
+
+function usarNen(){
+  if(!personagem) return;
+
+  const base = parseInt(baseNen.value);
+  const dif = parseInt(dificuldade.value);
+  const roll = Math.floor(Math.random()*20)+1;
+
+  let bonus = 0;
+  if(personagem.juramentos){
+    personagem.juramentos.forEach(j=>bonus+=j.bonus);
+  }
+
+  const total = roll + base + bonus;
+
+  let log = `${personagem.nome}: d20(${roll}) + ${base} + Juramento(${bonus}) = ${total}`;
+
+  if(total < dif){
+    personagem.exaustao = (personagem.exaustao || 0) + 1;
+    log += " ❌ Falha → Exaustão +1";
+  }else{
+    log += " ✅ Sucesso";
+  }
+
+  campanha.logs.push(log);
+  socket.emit("updateCampanha", campanha);
+}
+</script>
+
 </body>
 </html>

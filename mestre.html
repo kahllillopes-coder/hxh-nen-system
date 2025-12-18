@@ -1,10 +1,107 @@
-
 <!DOCTYPE html>
-<html>
-<head><meta charset="UTF-8"><title>HxH Mestre</title></head>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>HxH Nen System – Mestre</title>
+
+<style>
+body{
+  margin:0;
+  background:#020617;
+  color:#e5e7eb;
+  font-family:Arial, sans-serif;
+}
+header{
+  background:#020617;
+  border-bottom:2px solid #ef4444;
+  padding:10px;
+  text-align:center;
+  font-size:18px;
+}
+main{
+  padding:14px;
+  max-width:1000px;
+  margin:auto;
+}
+.secao{
+  border-top:1px solid #ef4444;
+  margin-top:14px;
+  padding-top:14px;
+}
+button,input,textarea{
+  width:100%;
+  margin-top:6px;
+  padding:6px;
+  background:#020617;
+  color:#e5e7eb;
+  border:1px solid #ef4444;
+}
+button{
+  background:#ef4444;
+  color:#020617;
+  font-weight:bold;
+  cursor:pointer;
+}
+button:hover{background:#f87171}
+textarea{resize:vertical}
+.log{
+  font-size:13px;
+  border-bottom:1px solid #334155;
+  padding:4px 0;
+}
+</style>
+</head>
+
 <body>
-<h1>HxH Nen System - Mestre</h1>
-<p>const socket = io("https://hxh-nen-system.onrender.com");
-</p>
-</body>
-</html>
+
+<header>🧙 Hunter × Hunter RPG — Mestre</header>
+
+<main>
+
+<div class="secao">
+  <h3>📍 Evento / Local</h3>
+  <input id="local" placeholder="Local (ex: Yorknew)">
+  <textarea id="descricao" placeholder="Descrição do evento"></textarea>
+  <button onclick="criarEvento()">Criar Evento</button>
+</div>
+
+<div class="secao">
+  <h3>🧑 Criar Personagem (Jogador)</h3>
+  <input id="nomeFicha" placeholder="Nome do personagem">
+  <button onclick="criarFicha()">Adicionar</button>
+</div>
+
+<div class="secao">
+  <h3>📜 Logs da Campanha</h3>
+  <div id="logs"></div>
+</div>
+
+</main>
+
+<!-- 1️⃣ Socket.IO -->
+<script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+
+<!-- 2️⃣ Código do Mestre -->
+<script>
+const socket = io("https://hxh-nen-system.onrender.com");
+
+let campanha = {
+  eventos: [],
+  fichas: [],
+  logs: []
+};
+
+socket.on("connect", () => {
+  console.log("Mestre conectado ao servidor");
+});
+
+socket.on("sync", data => {
+  campanha = data;
+  renderLogs();
+});
+
+function criarEvento(){
+  const l = local.value;
+  const d = descricao.value;
+
+  i
