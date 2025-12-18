@@ -104,4 +104,45 @@ function criarEvento(){
   const l = local.value;
   const d = descricao.value;
 
-  i
+  if(!l || !d) return;
+
+  campanha.eventos.push({
+    local:l,
+    descricao:d,
+    data:new Date().toLocaleString()
+  });
+
+  campanha.logs.push(`📍 Evento em ${l}: ${d}`);
+  socket.emit("updateCampanha", campanha);
+
+  local.value = "";
+  descricao.value = "";
+}
+
+function criarFicha(){
+  const nome = nomeFicha.value;
+  if(!nome) return;
+
+  campanha.fichas.push({
+    nome:nome,
+    exaustao:0,
+    juramentos:[]
+  });
+
+  campanha.logs.push(`🧑 Personagem criado: ${nome}`);
+  socket.emit("updateCampanha", campanha);
+
+  nomeFicha.value = "";
+}
+
+function renderLogs(){
+  logs.innerHTML = "";
+  campanha.logs.slice(-15).forEach(l=>{
+    logs.innerHTML += `<div class="log">${l}</div>`;
+  });
+}
+</script>
+
+</body>
+</html>
+
