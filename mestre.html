@@ -59,10 +59,22 @@ textarea{resize:vertical}
 <main>
 
 <div class="secao">
+  <h3>🗺️ Mapa do Mundo (Visão do Mestre)</h3>
+  <img 
+    src="https://static.wikia.nocookie.net/hunterxhunter/images/6/64/Hunter_%C3%97_Hunter_World_Map.png"
+    style="width:100%;border:1px solid #ef4444"
+  >
+  <p id="localAtualMapa">Local atual: Nenhum</p>
+</div>
+
+
+<div class="secao">
   <h3>📍 Evento / Local</h3>
   <input id="local" placeholder="Local (ex: Yorknew)">
   <textarea id="descricao" placeholder="Descrição do evento"></textarea>
-  <button onclick="criarEvento()">Criar Evento</button>
+  <button onclick="criarEvento(document.getElementById("localAtualMapa").innerText =
+  "Local atual: " + l;
+)">Criar Evento</button>
 </div>
 
 <div class="secao">
@@ -103,37 +115,45 @@ socket.on("sync", data => {
 function criarEvento(){
   const l = local.value;
   const d = descricao.value;
-
   if(!l || !d) return;
 
+  // 1️⃣ Registra o evento
   campanha.eventos.push({
-    local:l,
-    descricao:d,
-    data:new Date().toLocaleString()
+    local: l,
+    descricao: d
   });
 
+  // 2️⃣ Adiciona log da campanha
   campanha.logs.push(`📍 Evento em ${l}: ${d}`);
+
+  // 3️⃣ Atualiza logs na tela do mestre
+  renderLogs();
+
+  // 4️⃣ Atualiza local exibido no mapa
+  document.getElementById("localAtualMapa").innerText =
+    "Local atual: " + l;
+
+  // 5️⃣ Envia tudo para o servidor (realtime)
   socket.emit("updateCampanha", campanha);
 
+  // 6️⃣ Limpa campos
   local.value = "";
   descricao.value = "";
 }
 
+
 function criarFicha(){
-  const nome = nomeFicha.value;
-  if(!nome) return;
+  const n = nomeFicha.value;
+  if(!n) return;
 
-  campanha.fichas.push({
-    nome:nome,
-    exaustao:0,
-    juramentos:[]
-  });
-
-  campanha.logs.push(`🧑 Personagem criado: ${nome}`);
+  campanha.fichas.push({nome:n,exaustao:0,juramentos:[]});
+  campanha.logs.push(`🧑 Personagem criado: ${n}`);
+  renderLogs(); // 👈 força render local
   socket.emit("updateCampanha", campanha);
 
-  nomeFicha.value = "";
+  nomeFicha.value="";
 }
+
 
 function renderLogs(){
   logs.innerHTML = "";
